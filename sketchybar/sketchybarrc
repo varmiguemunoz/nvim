@@ -1,0 +1,123 @@
+#!/bin/bash
+
+# ------------------------------------------------------------
+# macOS Omarchy Lite — SketchyBar
+# Palette: Gentleman Kanagawa Blur
+# ------------------------------------------------------------
+
+PLUGIN_DIR="$HOME/.config/sketchybar/plugins"
+
+# Palette: bg #191e28 · fg #f3f6f9 · muted #8a8fa3
+#          violet #b99bf2 · green #b7cc85 · yellow #ffe066
+#          red #cb7c94 · blue #7fb4ca · ink #06080f
+FG=0xfff3f6f9
+MUTED=0xff8a8fa3
+GREEN=0xffb7cc85
+SURFACE=0xe6191e28
+
+# ------------------------------------------------------------
+# Bar
+# ------------------------------------------------------------
+sketchybar --bar \
+  position=top \
+  topmost=off \
+  height=34 \
+  color=0x00000000 \
+  blur_radius=0 \
+  corner_radius=0 \
+  padding_left=10 \
+  padding_right=10 \
+  y_offset=3 \
+  margin=4 \
+  font_smoothing=off \
+  shadow=off
+
+# ------------------------------------------------------------
+# Defaults
+# ------------------------------------------------------------
+sketchybar --default \
+  icon.font="JetBrainsMono Nerd Font:Regular:14.0" \
+  label.font="Departure Mono:Regular:12.0" \
+  icon.color=$FG \
+  label.color=$FG \
+  padding_left=6 \
+  padding_right=6 \
+  icon.padding_left=2 \
+  icon.padding_right=2 \
+  background.drawing=off \
+  background.corner_radius=6 \
+  background.height=24
+
+# ------------------------------------------------------------
+# Right: network, volume, battery, clock
+# SketchyBar inserts each new right item to the left of the
+# existing group, so add them in reverse visual order.
+# Visual (left -> right): network volume battery clock
+# ------------------------------------------------------------
+sketchybar --add item clock right \
+  --set clock \
+  icon="" \
+  icon.font="JetBrainsMono Nerd Font:Regular:14.0" \
+  icon.color=$MUTED \
+  label="$(date '+%a %d %b  %H:%M')" \
+  label.font="Departure Mono:Regular:12.0" \
+  label.color=$FG \
+  padding_left=6 \
+  padding_right=2 \
+  background.drawing=off \
+  script="$PLUGIN_DIR/clock.sh" \
+  update_freq=10
+
+sketchybar --add item battery right \
+  --set battery \
+  icon="󰁹" \
+  icon.color=$GREEN \
+  label="100%" \
+  label.color=$FG \
+  padding_left=6 \
+  padding_right=6 \
+  background.drawing=off \
+  script="$PLUGIN_DIR/battery.sh" \
+  update_freq=60 \
+  --subscribe battery power_source_change system_woke
+
+sketchybar --add item volume right \
+  --set volume \
+  icon="" \
+  icon.color=$FG \
+  label.drawing=off \
+  padding_left=6 \
+  padding_right=6 \
+  background.drawing=off \
+  script="$PLUGIN_DIR/volume.sh" \
+  update_freq=0 \
+  --subscribe volume volume_change system_woke
+
+sketchybar --add item network right \
+  --set network \
+  icon="" \
+  icon.color=$GREEN \
+  label.drawing=off \
+  padding_left=6 \
+  padding_right=6 \
+  background.drawing=off \
+  script="$PLUGIN_DIR/network.sh" \
+  update_freq=30 \
+  --subscribe network wifi_change system_woke
+
+sketchybar --add bracket status_capsule network volume battery clock \
+  --set status_capsule \
+  background.drawing=on \
+  background.color=$SURFACE \
+  background.corner_radius=9 \
+  background.height=28 \
+  background.padding_left=8 \
+  background.padding_right=8
+
+# ------------------------------------------------------------
+# Initial state
+# ------------------------------------------------------------
+sketchybar --trigger wifi_change
+sketchybar --trigger volume_change
+
+sketchybar --update
